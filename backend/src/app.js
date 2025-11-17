@@ -39,8 +39,11 @@ app.use(
       } else {
         console.warn(`🚫 CORS blocked origin: ${origin}`);
         console.warn(`   Allowed origins:`, allowedOrigins);
-        const error = new Error(`Not allowed by CORS. Origin: ${origin}`);
-        callback(error);
+        if (!process.env.FRONTEND_URL) {
+          console.error(`   ⚠️ FRONTEND_URL not set! Set it in Render environment variables.`);
+        }
+        // Return false to deny, which sends proper CORS error response
+        callback(null, false);
       }
     },
     credentials: true,
@@ -65,6 +68,11 @@ app.use("/api/subscribers", subscriberRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
+  // Don't handle CORS errors here - let cors library handle them
+  if (err.message && err.message.includes("CORS")) {
+    return next(err); // Let cors library send proper CORS error response
+  }
+  
   console.error(err.stack);
   res.status(500).json({ message: "Internal server error" });
 });
