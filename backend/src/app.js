@@ -22,6 +22,12 @@ const allowedOrigins = [
   process.env.FRONTEND_URL,
 ].filter(Boolean); // Remove undefined values
 
+// Log allowed origins on startup (helps debug CORS issues)
+console.log("🔒 CORS Allowed Origins:", allowedOrigins);
+if (!process.env.FRONTEND_URL) {
+  console.warn("⚠️ FRONTEND_URL not set in environment variables!");
+}
+
 app.use(
   cors({
     origin: (origin, callback) => {
@@ -31,7 +37,10 @@ app.use(
       if (allowedOrigins.indexOf(origin) !== -1) {
         callback(null, true);
       } else {
-        callback(new Error("Not allowed by CORS"));
+        console.warn(`🚫 CORS blocked origin: ${origin}`);
+        console.warn(`   Allowed origins:`, allowedOrigins);
+        const error = new Error(`Not allowed by CORS. Origin: ${origin}`);
+        callback(error);
       }
     },
     credentials: true,
