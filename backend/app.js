@@ -16,7 +16,16 @@ mongoose
 const app = express();
 
 // Middleware
-app.use(cors());
+const allowedOrigins = [
+  "http://localhost:5173",  // Local Vite dev
+  "https://buildpro-<your-vercel-domain>.vercel.app", // Replace after deployment
+];
+
+app.use(cors({
+  origin: allowedOrigins,
+  credentials: true,
+}));
+
 app.use(express.json());
 
 // Test route
