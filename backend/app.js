@@ -31,14 +31,15 @@ const allowedOrigins = [
 
 app.use(
   cors({
-    origin: function (origin, callback) {
-      if (!origin) return callback(null, true); // allow postman / mobile
-      if (allowedOrigins.includes(origin)) return callback(null, true);
-      return callback(new Error("CORS Error: Not allowed by server"));
-    },
+    origin: [
+      "http://localhost:5173",
+      "https://build-pro-three.vercel.app",
+    ],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     credentials: true,
   })
 );
+
 
 // ------------------------
 // Middleware
