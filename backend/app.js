@@ -1,5 +1,3 @@
-
-
 import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
@@ -7,44 +5,71 @@ import cors from "cors";
 
 dotenv.config();
 
+// ------------------------
 // Connect to MongoDB
+// ------------------------
 mongoose
-  .connect(process.env.MONGO_URI)
+  .connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
   .then(() => console.log("MongoDB Connected Successfully"))
   .catch((err) => console.log("MongoDB Connection Error:", err));
 
+// ------------------------
+// Initialize Express App
+// ------------------------
 const app = express();
 
-// Middleware
+// ------------------------
+// CORS Configuration
+// ------------------------
 const allowedOrigins = [
-  "http://localhost:5173",  // Local Vite dev
-  "https://buildpro-<your-vercel-domain>.vercel.app", // Replace after deployment
+  "http://localhost:5173",
+  "https://build-pro-three.vercel.app"  // <-- your deployed frontend
 ];
 
-app.use(cors({
-  origin: allowedOrigins,
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true); // allow postman / mobile
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      return callback(new Error("CORS Error: Not allowed by server"));
+    },
+    credentials: true,
+  })
+);
 
+// ------------------------
+// Middleware
+// ------------------------
 app.use(express.json());
 
-// Test route
+// ------------------------
+// Default Route
+// ------------------------
 app.get("/", (req, res) => {
-  res.send("API is running...");
+  res.json({ message: "API is running" });
 });
 
-// Import routes (we will create these files next)
+// ------------------------
+// Import Routes
+// ------------------------
 import projectRoutes from "./routes/projectRoutes.js";
 import clientRoutes from "./routes/clientRoutes.js";
 import contactRoutes from "./routes/contactRoutes.js";
 import subscriberRoutes from "./routes/subscriberRoutes.js";
 
-// Use routes
+// ------------------------
+// Use Routes
+// ------------------------
 app.use("/api/projects", projectRoutes);
 app.use("/api/clients", clientRoutes);
 app.use("/api/contacts", contactRoutes);
 app.use("/api/subscribers", subscriberRoutes);
 
-// Start server
+// ------------------------
+// Start Server
+// ------------------------
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
